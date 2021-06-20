@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, json } from "express";
 
 interface IConfig {
     PORT: number
@@ -12,7 +12,12 @@ class App {
     constructor(config: IConfig) {
         this.main = express();
         this.PORT = config.PORT;
+        this.config();
         this.routes();
+    }
+
+    public config(){
+        this.main.use(json());
     }
 
     public routes () {
