@@ -1,4 +1,5 @@
 import express, { Express, json } from "express";
+import Router from "./routes";
 
 interface IConfig {
     PORT: number
@@ -9,9 +10,9 @@ class App {
     private main: Express;
     private readonly PORT: number;
 
-    constructor(config: IConfig) {
+    constructor({ PORT }: IConfig) {
         this.main = express();
-        this.PORT = config.PORT;
+        this.PORT = PORT;
         this.config();
         this.routes();
     }
@@ -26,6 +27,7 @@ class App {
                 author: "Daniel Dantas Catarina",
             });
         });
+        this.main.use("/api/v1", Router);
     }
 
     public listen () {
