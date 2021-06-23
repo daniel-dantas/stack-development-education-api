@@ -12,3 +12,8 @@ export interface IPost {
     link: string,
     title: string
 }
+
+export interface ITag {
+    name: string;
+    count: number;
+}

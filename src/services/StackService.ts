@@ -1,6 +1,6 @@
 import axios from "axios"
 import DotEnv from "dotenv";
-import {IPost} from "../types";
+import {IPost, ITag} from "../types";
 
 DotEnv.config();
 
@@ -22,6 +22,12 @@ abstract class StackService {
 
         return response.data.items as IPost[];
     }
+
+    public static async searchTag(tag_name: string){
+        const response = await API.get(`/tags?order=desc&sort=popular&inname=${tag_name}&site=stackoverflow`);
+        return (response.data.items as ITag[])[0];
+    }
+
 }
 
 export default StackService;
