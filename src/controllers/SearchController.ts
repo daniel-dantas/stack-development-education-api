@@ -91,7 +91,6 @@ abstract class SearchController {
                 }
 
             }
-
             return res.status(200).json({data: posts});
 
         } catch (err) {
