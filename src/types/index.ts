@@ -1,6 +1,7 @@
 export interface IPost {
     tags: any[],
     owner: any[],
+    descriptionComponent?: string,
     is_answered: boolean,
     view_count: number,
     answer_count: number,
