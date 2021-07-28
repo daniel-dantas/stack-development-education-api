@@ -1,6 +1,8 @@
 import {Request, Response} from "express";
 import StackService from "../services/StackService";
 import {getClient} from "../client/elasticsearch";
+import Axios from "axios";
+import {IPost} from "../types";
 
 const client = getClient();
 
@@ -34,7 +36,7 @@ abstract class SearchController {
                             }
                         }
                     },
-                })
+                });
             } catch (e) {
                 result = null;
             }
@@ -91,7 +93,6 @@ abstract class SearchController {
                 }
 
             }
-
             return res.status(200).json({data: posts});
 
         } catch (err) {
@@ -100,6 +101,53 @@ abstract class SearchController {
             })
         }
     }
+
+    public static async get(req: Request, res: Response){
+        try {
+
+            const { id } = req.params;
+
+            let postData;
+
+            try {
+                postData = await client.search({
+                    index: 'post',
+                    q: `question_id:${id}`
+                });
+
+            } catch (err) {
+                postData = null;
+            }
+
+            if(!postData) return res.status(400).json({message: "post not exist"});
+
+            // const elasticSearchID = (postData?.hits?.hits[0] as any)._id;
+            postData = ((postData?.hits?.hits[0] as any)._source as IPost);
+
+            if(!postData.descriptionComponent){
+
+                const pageDetail = await Axios.get(postData.link);
+
+                let description: any = pageDetail.data as string;
+                description = (description as string)
+                                .split(`<div class="s-prose js-post-body" itemprop="text">`)[1]
+                                .split(`<div class="mt24 mb12">`)[0];
+
+                postData.descriptionComponent = description;
+            }
+
+            return res.status(200).json({
+                data: postData
+            });
+
+        } catch (e) {
+            console.error(e);
+            return res.status(500).json({
+                message: "Failed to loading post data"
+            });
+        }
+    }
+
 }
 
 export default SearchController;

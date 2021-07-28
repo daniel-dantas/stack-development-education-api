@@ -15,9 +15,9 @@ abstract class StackService {
         let response;
 
         if(tags){
-            response = await API.get(`/search/advanced?pagesize=100&order=desc&tagged=${tags.join(";")}&sort=activity&q=${search}&site=stackoverflow`)
+            response = await API.get(`/search/advanced?pagesize=100&order=desc&tagged=${tags.join(";")}&sort=votes&q=${search}&site=stackoverflow`)
         }else{
-            response = await API.get(`/search/advanced?pagesize=100&order=desc&sort=activity&q=${search}&site=stackoverflow`);
+            response = await API.get(`/search/advanced?pagesize=100&order=desc&sort=votes&q=${search}&site=stackoverflow`);
         }
 
         return response.data.items as IPost[];
