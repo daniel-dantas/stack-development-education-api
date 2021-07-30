@@ -3,6 +3,9 @@ import StackService from "../services/StackService";
 import {getClient} from "../client/elasticsearch";
 import Axios from "axios";
 import {IPost} from "../types";
+import * as handlebars from "handlebars";
+import {resolve} from "path";
+import * as fs from "fs";
 
 const client = getClient();
 
@@ -136,9 +139,36 @@ abstract class SearchController {
                 postData.descriptionComponent = description;
             }
 
-            return res.status(200).json({
-                data: postData
+            // return res.status(200).json({
+            //     data: postData
+            // });
+
+            const templateFileContent = fs
+                .readFileSync(
+                    resolve(
+                        __dirname,
+                        "..",
+                        "views",
+                        "detailPost.template.hbs"
+                    )
+                )
+                .toString("utf8");
+
+            //@ts-ignore
+            handlebars.registerHelper("section", function(name, options) {
+                //@ts-ignore
+                if (!this._sections) this._sections = {};
+                //@ts-ignore
+                this._sections[name] = options.fn(this);
+                return null;
+            })
+
+            const viewTemplate = handlebars.compile(templateFileContent);
+            const html = viewTemplate({
+                post: postData,
             });
+
+            return res.status(200).send(html);
 
         } catch (e) {
             console.error(e);

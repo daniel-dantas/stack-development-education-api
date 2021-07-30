@@ -1,0 +1,59 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .content {
+            margin: 0;
+            width: 90vw;
+            height: 100vh;
+
+            padding: 30px 20px;
+        }
+
+        .content p {
+            margin: 40px 0;
+        }
+
+        .content .container-resposta {
+            display: flex;
+            color: #fff;
+            background-color: #424242;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .content .container-resposta .score {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 200px;
+        }
+
+        .content .user-response{
+            padding: 20px 20px;
+        }
+
+        .content .container-resposta div:first-child {
+            background-color: #5B6E89;
+            border-radius: 5px;
+        }
+
+    </style>
+    <title>POST DETAIL</title>
+</head>
+<body>
+<div class="content">
+    <h3>{{post.title}}</h3>
+    <div id="description">
+        {{{post.descriptionComponent}}}
+    </div>
+</div>
+
+</body>
