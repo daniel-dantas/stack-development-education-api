@@ -136,8 +136,21 @@ abstract class SearchController {
                                 .split(`<div class="s-prose js-post-body" itemprop="text">`)[1]
                                 .split(`<div class="mt24 mb12">`)[0];
 
+
+                let answers = pageDetail.data;
+
+                console.log(postData.link)
+
+                answers = (answers as string)
+                            .split(`<div id="answers">`)[1]
+                            .split(`<div id="sidebar" class="show-votes" role="complementary" aria-label="sidebar">`)[0]
+                            .split(`<form id="post-form" action="/questions/${postData.question_id}/answer/submit" method="post" class="js-add-answer-component post-form">`)[0];
+
                 postData.descriptionComponent = description;
+                postData.answersComponent = answers;
             }
+
+
 
             // return res.status(200).json({
             //     data: postData
@@ -153,15 +166,6 @@ abstract class SearchController {
                     )
                 )
                 .toString("utf8");
-
-            //@ts-ignore
-            handlebars.registerHelper("section", function(name, options) {
-                //@ts-ignore
-                if (!this._sections) this._sections = {};
-                //@ts-ignore
-                this._sections[name] = options.fn(this);
-                return null;
-            })
 
             const viewTemplate = handlebars.compile(templateFileContent);
             const html = viewTemplate({
