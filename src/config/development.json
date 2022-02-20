@@ -1,0 +1,5 @@
+{
+    "stack_queue_job": {
+        "init": "* * * * *"
+    }
+}
