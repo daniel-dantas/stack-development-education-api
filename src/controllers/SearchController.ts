@@ -43,7 +43,7 @@ abstract class SearchController {
 
             if (result) {
                 if (result.hits.hits.length) {
-                    res.status(200).json({
+                    return res.status(200).json({
                         data: result.hits.hits.map(item => {
                             return item._source;
                         })
@@ -93,6 +93,7 @@ abstract class SearchController {
                 }
 
             }
+
             return res.status(200).json({data: posts});
 
         } catch (err) {
