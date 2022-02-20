@@ -1,14 +1,7 @@
 version: "3"
 services:
-  redis01:
-    image: redis:latest
-    container_name: redis01
-    ports:
-      - 6379:6379
-    networks:
-      - redis
   elasticsearch01:
-    image: elasticsearch:8.0.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
     container_name: elasticsearch01
     ports:
       - 9200:9200
@@ -19,7 +12,7 @@ services:
       - elastic
 
   kibana01:
-    image: kibana:8.0.0
+    image: docker.elastic.co/kibana/kibana:7.9.2
     container_name: kibana01
     ports:
       - 5601:5601
@@ -31,6 +24,4 @@ services:
 
 networks:
   elastic:
-    driver: bridge
-  redis:
     driver: bridge
