@@ -1,6 +1,6 @@
 import express, { Express, json } from "express";
 import Router from "./routes";
-
+import Jobs from "./jobs";
 interface IConfig {
     PORT: number
 }
@@ -9,12 +9,14 @@ class App {
 
     private main: Express;
     private readonly PORT: number;
+    private jobs;
 
     constructor({ PORT }: IConfig) {
         this.main = express();
         this.PORT = PORT;
         this.config();
         this.routes();
+        this.jobs = new Jobs();
     }
 
     public config(){
@@ -33,6 +35,9 @@ class App {
     public listen () {
         this.main.listen(this.PORT, () => {
             console.log(`Server is open ${this.PORT}`);
+        });
+        this.jobs.starter().then(() => {
+            console.log("Starter Jobs");
         });
     }
 
