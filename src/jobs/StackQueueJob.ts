@@ -1,11 +1,11 @@
 import { RedisClientType } from "redis";
-import cron from "node-cron";
 
 import Redis from "../databases/redis";
 import Config from "../config/development.json";
 import StackService from "../services/StackService";
 import {getClient} from "../client/elasticsearch";
 import { IPost } from "../types";
+import Job from "./Job";
 
 interface SearchProp {
     search?: string;
@@ -14,77 +14,59 @@ interface SearchProp {
 
 const client = getClient();
 
-class StackQueueJob {
+class StackQueueJob extends Job {
 
     private redisClient: RedisClientType<any>;
-    private cron: string | undefined;
-    private description: string;
 
     constructor() {
-        this.description = "stack_queue_job";
+        super("stack_queue_job");
         this.redisClient = new Redis().getClient();
+    }
 
-        for(let cron of Object.keys(Config)) {
-            if(["stack_queue_job"].includes(cron)){
-                // @ts-ignore
-                const stack_queue_job = Config[cron];
-                this.cron = stack_queue_job.init;
-            }
+    public async init() {
+        const resultString = await this.redisClient.get('searchs');
+
+        this.log(`Starting Job`);
+
+        const queue: SearchProp[] = resultString ? JSON.parse(resultString) : [];
+
+        let posts: IPost[] = [];
+
+        for(let item of queue) {
+            const postsResult = await StackService.advancedSearch(item?.search as string, item?.tags);
+            posts = [...posts, ...postsResult];
         }
 
-    }
+        for (const post of posts) {
+            try {
+                const dataPost = await client.search({
+                    index: "post",
+                    q: `question_id:${post.question_id}`
+                });
 
-    log(description: string) {
-        console.log(`${new Date()} - [${this.description}] - ${description}`);
-    }
-
-    async init() {
-        this.cron && cron.schedule(this.cron, async () => {
-            const resultString = await this.redisClient.get('searchs');
-
-            this.log(`Starting Job`);
-
-            const queue: SearchProp[] = resultString ? JSON.parse(resultString) : [];
-
-            let posts: IPost[] = [];
-
-            for(let item of queue) {
-                const postsResult = await StackService.advancedSearch(item?.search as string, item?.tags);
-                posts = [...posts, ...postsResult];
-            }
-
-            for (const post of posts) {
-                try {
-                    const dataPost = await client.search({
-                        index: "post",
-                        q: `question_id:${post.question_id}`
-                    });
-
-                    if (!dataPost.hits.hits.length) {
-                        await client.index({
-                            index: "post",
-                            type: "type_post",
-                            body: post
-                        });
-                    }
-                } catch (e) {
+                if (!dataPost.hits.hits.length) {
                     await client.index({
                         index: "post",
                         type: "type_post",
                         body: post
                     });
                 }
-
+            } catch (e) {
+                await client.index({
+                    index: "post",
+                    type: "type_post",
+                    body: post
+                });
             }
 
-            await this.redisClient.set("searchs", JSON.stringify([]));
+        }
 
-            this.log('Finishing Job');
-        });
+        await this.redisClient.set("searchs", JSON.stringify([]));
+
+        this.log('Finishing Job');
     }
 
     async insertQueue(data: SearchProp) {
-
         try {
             const resultString = await this.redisClient.get('searchs');
 
@@ -99,9 +81,6 @@ class StackQueueJob {
             this.log("Error: "+err.message);
             throw err;
         }
-
-        
-
     }
 
 }

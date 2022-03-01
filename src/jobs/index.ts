@@ -1,4 +1,6 @@
 import StackQueueJob from "./StackQueueJob";
+import Cron from "node-cron";
+import Config from "../config/development.json";
 
 class Jobs {
 
@@ -9,7 +11,17 @@ class Jobs {
     }
     
     async starter() {
-        await this.stack_queue_job.init();
+        for(let cronItem of Object.keys(Config)) {
+            switch (cronItem) {
+                case this.stack_queue_job.description:
+                    // @ts-ignore    
+                    const stack_queue_job = Config[cronItem];
+                    Cron.schedule(stack_queue_job.init, async () => await this.stack_queue_job.init());
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
 
