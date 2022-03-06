@@ -6,6 +6,7 @@ import { IPost } from "../types";
 import * as handlebars from "handlebars";
 import { resolve } from "path";
 import * as fs from "fs";
+import StackQueueJob from "../jobs/StackQueueJob";
 
 const client = getClient();
 
@@ -15,7 +16,7 @@ abstract class SearchController {
       const { search, tags } = req.body as { search: string; tags: string[] };
 
       let result;
-
+      const stack_queue_job = new StackQueueJob();
       // let tagsStack: string[] = [];
       //
       // for(let tag of tags){
@@ -53,48 +54,52 @@ abstract class SearchController {
             }),
           });
         }
-      }
+      } else {
+        let tagsStack: string[] = [];
 
-      let tagsStack: string[] = [];
+        for (let tag of tags) {
+          const tagStack = await StackService.searchTag(tag);
 
-      for (let tag of tags) {
-        const tagStack = await StackService.searchTag(tag);
-
-        if (tagStack) {
-          tagsStack.push(tagStack.name);
+          if (tagStack) {
+            tagsStack.push(tagStack.name);
+          }
         }
-      }
 
-      let posts = await StackService.advancedSearch(search, tagsStack);
+        let posts = await StackService.advancedSearch(search, tagsStack);
 
-      for (const tag of tagsStack) {
-        const result = await StackService.advancedSearch(search, [tag]);
-        posts = [...posts, ...result];
-      }
+        for (const tag of tagsStack) {
+          const result = await StackService.advancedSearch(search, [tag]);
+          posts = [...posts, ...result];
+        }
 
-      for (const post of posts) {
-        try {
-          const dataPost = await client.search({
-            index: "post",
-            q: `question_id:${post.question_id}`,
-          });
+        for (const post of posts) {
+          try {
+            const dataPost = await client.search({
+              index: "post",
+              q: `question_id:${post.question_id}`,
+            });
 
-          if (!dataPost.hits.hits.length) {
+            if (!dataPost.hits.hits.length) {
+              await client.index({
+                index: "post",
+                type: "type_post",
+                body: post,
+              });
+            }
+          } catch (e) {
             await client.index({
               index: "post",
               type: "type_post",
               body: post,
             });
           }
-        } catch (e) {
-          await client.index({
-            index: "post",
-            type: "type_post",
-            body: post,
-          });
         }
+        
+        res.status(200).json({ data: posts });
       }
-      return res.status(200).json({ data: posts });
+
+      await stack_queue_job.insertQueue({ search, tags });
+
     } catch (err) {
       return res.json(500).json({
         message: "Failed to search question!",
