@@ -28,37 +28,44 @@ class StackQueueJob extends Job {
 
         this.log(`Starting Job`);
 
+        this.log("REDIS LOADED");
+
+        console.log(resultString);
+
         const queue: SearchProp[] = resultString ? JSON.parse(resultString) : [];
 
-        let posts: IPost[] = [];
-
         for(let item of queue) {
-            const postsResult = await StackService.advancedSearch(item?.search as string, item?.tags);
-            posts = [...posts, ...postsResult];
-        }
 
-        for (const post of posts) {
-            try {
-                const dataPost = await client.search({
-                    index: "post",
-                    q: `question_id:${post.question_id}`
-                });
+            for(let tag of (item?.tags ? item?.tags : [])) {
 
-                if (!dataPost.hits.hits.length) {
-                    await client.index({
-                        index: "post",
-                        type: "type_post",
-                        body: post
-                    });
+                this.log(`Pesquisando tag ${tag}`);
+
+                const postsResult = await StackService.advancedSearch(item?.search as string, [tag]);
+
+                for (const post of postsResult) {
+                    try {
+                        const dataPost = await client.search({
+                            index: "post",
+                            q: `question_id:${post.question_id}`
+                        });
+        
+                        if (!dataPost.hits.hits.length) {
+                            await client.index({
+                                index: "post",
+                                type: "type_post",
+                                body: post
+                            });
+                        }
+                    } catch (e) {
+                        await client.index({
+                            index: "post",
+                            type: "type_post",
+                            body: post
+                        });
+                    }
                 }
-            } catch (e) {
-                await client.index({
-                    index: "post",
-                    type: "type_post",
-                    body: post
-                });
             }
-
+            
         }
 
         await this.redisClient.set("searchs", JSON.stringify([]));

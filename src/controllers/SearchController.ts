@@ -14,6 +14,15 @@ abstract class SearchController {
   public static async index(req: Request, res: Response) {
     try {
       const { search, tags } = req.body as { search: string; tags: string[] };
+      let tagsStack: string[] = [];
+
+      for (let tag of tags) {
+        const tagStack = await StackService.searchTag(tag);
+
+        if (tagStack) {
+          tagsStack.push(tagStack.name);
+        }
+      }
 
       let result;
       const stack_queue_job = new StackQueueJob();
@@ -35,7 +44,7 @@ abstract class SearchController {
             query: {
               match: {
                 title: search,
-                // tags: tagsStack
+                tags: tagsStack
               },
             },
           },
@@ -55,22 +64,8 @@ abstract class SearchController {
           });
         }
       } else {
-        let tagsStack: string[] = [];
 
-        for (let tag of tags) {
-          const tagStack = await StackService.searchTag(tag);
-
-          if (tagStack) {
-            tagsStack.push(tagStack.name);
-          }
-        }
-
-        let posts = await StackService.advancedSearch(search, tagsStack);
-
-        for (const tag of tagsStack) {
-          const result = await StackService.advancedSearch(search, [tag]);
-          posts = [...posts, ...result];
-        }
+        let posts = await StackService.advancedSearch(search, []);
 
         for (const post of posts) {
           try {
@@ -98,7 +93,7 @@ abstract class SearchController {
         res.status(200).json({ data: posts });
       }
 
-      await stack_queue_job.insertQueue({ search, tags });
+      await stack_queue_job.insertQueue({ search, tags: tagsStack });
 
     } catch (err) {
       return res.json(500).json({

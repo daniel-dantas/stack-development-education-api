@@ -9,14 +9,17 @@ class App {
 
     private main: Express;
     private readonly PORT: number;
-    private jobs;
+    // private jobs;
 
     constructor({ PORT }: IConfig) {
         this.main = express();
         this.PORT = PORT;
         this.config();
         this.routes();
-        this.jobs = new Jobs();
+        // this.jobs = new Jobs();
+        // this.jobs.starter().then(() => {
+        //     console.log("Starter Jobs");
+        // });
     }
 
     public config(){
@@ -35,9 +38,6 @@ class App {
     public listen () {
         this.main.listen(this.PORT, () => {
             console.log(`Server is open ${this.PORT}`);
-        });
-        this.jobs.starter().then(() => {
-            console.log("Starter Jobs");
         });
     }
 
