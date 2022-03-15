@@ -36,6 +36,8 @@ class StackQueueJob extends Job {
 
         for(let item of queue) {
 
+            let postsResultItem = await StackService.advancedSearch(item?.search as string, [...(item as any)?.tags]);
+
             for(let tag of (item?.tags ? item?.tags : [])) {
 
                 this.log(`Pesquisando tag ${tag}`);

@@ -32,15 +32,8 @@ abstract class SearchController {
 
       let result;
       const stack_queue_job = new StackQueueJob();
-      // let tagsStack: string[] = [];
-      //
-      // for(let tag of tags){
-      //     const tagStack = await StackService.searchTag(tag);
-      //
-      //     if(tagStack){
-      //         tagsStack.push(tagStack.name);
-      //     }
-      // }
+
+      // const tagQuery = tags.map(tag => `tags:*${tag}*`);
 
       try {
         result = await client.search({
@@ -50,7 +43,6 @@ abstract class SearchController {
             query: {
               match: {
                 title: search,
-                // tags: tagsStack
               },
             },
           },
