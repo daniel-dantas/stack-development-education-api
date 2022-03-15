@@ -65,7 +65,10 @@ class StackQueueJob extends Job {
                     }
                 }
             }
-            
+
+            const index = queue.findIndex(itemFind => itemFind.search = item.search);
+            queue.splice(index, 1);
+            await this.redisClient.set("searchs", JSON.stringify(queue));
         }
 
         await this.redisClient.set("searchs", JSON.stringify([]));

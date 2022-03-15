@@ -10,4 +10,4 @@ new App({PORT: Number(process.env.PORT)}).listen();
 
 jobs.starter().then(() => {
     console.log("Starter jobs")
-})
+});
