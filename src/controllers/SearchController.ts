@@ -16,6 +16,8 @@ abstract class SearchController {
       const { search, tags } = req.body as { search: string; tags: string[] };
       let tagsStack: string[] = [];
 
+      console.log("REQ: ");
+      console.log(search, tags);
 
       try {
         for (let tag of tags) {
@@ -39,17 +41,14 @@ abstract class SearchController {
         result = await client.search({
           index: "post",
           size: 50,
-          body: {
-            query: {
-              match: {
-                title: search,
-              },
-            },
-          },
+          q: `${search}`
         });
       } catch (e) {
         result = null;
       }
+
+      console.log("RESULT");
+      console.log(result)
 
       if (result) {
         console.log("RESULT");

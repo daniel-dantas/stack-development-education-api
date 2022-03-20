@@ -1,5 +1,5 @@
 {
     "stack_queue_job": {
-        "init": "59 * * * *"
+        "init": "* * * * *"
     }
 }
