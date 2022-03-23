@@ -16,6 +16,7 @@
     "handlebars": "^4.7.7",
     "node-cron": "^3.0.0",
     "redis": "^4.0.3",
+    "semaphore": "^1.1.0",
     "typescript": "^4.3.4"
   },
   "devDependencies": {
@@ -27,6 +28,7 @@
     "@types/node": "^15.12.4",
     "@types/node-cron": "^3.0.1",
     "@types/redis": "^4.0.11",
+    "@types/semaphore": "^1.1.1",
     "dotenv": "^10.0.0",
     "mocha": "^9.2.2",
     "nodemon": "^2.0.7",
