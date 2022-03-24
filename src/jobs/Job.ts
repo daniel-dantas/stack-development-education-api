@@ -1,19 +1,15 @@
-
 class Job {
-
-    private readonly description: string;
+    public description: string;
 
     constructor(description: string) {
         this.description = description;
     }
 
-    async init() {
-
+    public log(description: string) {
+        console.log(`${new Date()} - [${this.description}] - ${description}`);
     }
 
-    async stop(){
-
-    }
+    public async init() {}
 }
 
 export default Job;

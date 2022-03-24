@@ -11,7 +11,6 @@ const API = axios.create({
 
 abstract class StackService {
     public static async advancedSearch(search: string, tags?: string[]) {
-
         let response;
 
         if(tags){

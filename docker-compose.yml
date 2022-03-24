@@ -1,5 +1,24 @@
-version: "3"
+version: '3.7'
+
 services:
+  elasticsearch:
+    image: elasticsearch:7.9.2
+    ports:
+      - '9200:9200'
+    environment:
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - elastic
+  kibana:
+    image: kibana:7.9.2
+    ports:
+      - '5601:5601'
+    networks:
+      - elastic
   redis01:
     image: redis:latest
     container_name: redis01
@@ -7,28 +26,6 @@ services:
       - 6379:6379
     networks:
       - redis
-  elasticsearch01:
-    image: elasticsearch:8.0.0
-    container_name: elasticsearch01
-    ports:
-      - 9200:9200
-      - 9300:9300
-    environment:
-      discovery.type: single-node
-    networks:
-      - elastic
-
-  kibana01:
-    image: kibana:8.0.0
-    container_name: kibana01
-    ports:
-      - 5601:5601
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch01:9200
-      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
-    networks:
-      - elastic
-
 networks:
   elastic:
     driver: bridge
