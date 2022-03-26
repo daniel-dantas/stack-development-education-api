@@ -9,7 +9,7 @@ import Job from "./Job";
 
 interface SearchProp {
     search?: string;
-    tags?: string[];
+    tags: string[];
 }
 
 const client = getClient();
@@ -40,9 +40,9 @@ class StackQueueJob extends Job {
 
             for(let tag of (item?.tags ? item?.tags : [])) {
 
-                this.log(`Pesquisando tag ${tag}`);
-
-                const postsResult = await StackService.advancedSearch(item?.search as string, [tag]);
+                const tagStack = await StackService.searchTag(tag);
+                
+                const postsResult = await StackService.advancedSearch(item?.search as string, [tagStack.name]);
 
                 for (const post of postsResult) {
                     try {
