@@ -17,25 +17,10 @@ abstract class SearchController {
       let tagsStack: string[] = [];
 
       console.log("REQ: ");
-      console.log(search, tags);
-
-      try {
-        for (let tag of tags) {
-          const tagStack = await StackService.searchTag(tag);
-  
-          if (tagStack) {
-            tagsStack.push(tagStack.name);
-          }
-        }
-      } catch (err) {
-        tagsStack = tags;
-      }
-      
+      console.log(search, tags);      
 
       let result;
       const stack_queue_job = new StackQueueJob();
-
-      // const tagQuery = tags.map(tag => `tags:*${tag}*`);
 
       try {
         result = await client.search({
@@ -47,12 +32,7 @@ abstract class SearchController {
         result = null;
       }
 
-      console.log("RESULT");
-      console.log(result)
-
       if (result) {
-        console.log("RESULT");
-        console.log(result);
         if (result.hits.hits.length) {
           res.status(200).json({
             data: result.hits.hits.map((item) => {
@@ -91,7 +71,7 @@ abstract class SearchController {
         
       }
 
-      await stack_queue_job.insertQueue({ search, tags: tagsStack });
+      await stack_queue_job.insertQueue({ search, tags });
 
     } catch (err) {
       return res.json(500).json({

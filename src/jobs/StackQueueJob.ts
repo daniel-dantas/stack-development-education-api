@@ -4,12 +4,12 @@ import Redis from "../databases/redis";
 import Config from "../config/development.json";
 import StackService from "../services/StackService";
 import {getClient} from "../client/elasticsearch";
-import { IPost } from "../types";
+import { IPost, ITag } from "../types";
 import Job from "./Job";
 
 interface SearchProp {
     search?: string;
-    tags?: string[];
+    tags: string[];
 }
 
 const client = getClient();
@@ -22,6 +22,24 @@ class StackQueueJob extends Job {
         super("stack_queue_job");
         this.redisClient = new Redis().getClient();
     }
+
+    public async getStackTags(tags: string[]) : Promise<string[]> {
+        try {
+            const result: string[] = [];
+            for (let tag of tags) {
+                const tagStack = await StackService.searchTag(tag);
+        
+                if (tagStack) {
+                    result.push(tagStack?.name);
+                }
+            }
+
+            return result;
+        } catch (err) {
+            console.log(err);
+            return [];
+        }
+    } 
 
     public async init() {
         const resultString = await this.redisClient.get('searchs');
@@ -36,11 +54,12 @@ class StackQueueJob extends Job {
 
         for(let item of queue) {
 
-            let postsResultItem = await StackService.advancedSearch(item?.search as string, [...(item as any)?.tags]);
+            const stackTags = await this.getStackTags(item.tags);
 
-            for(let tag of (item?.tags ? item?.tags : [])) {
+            console.log("Stack Tags Carregadas")
+            console.log(stackTags);
 
-                this.log(`Pesquisando tag ${tag}`);
+            for(let tag of stackTags) {
 
                 const postsResult = await StackService.advancedSearch(item?.search as string, [tag]);
 
